@@ -52,59 +52,53 @@ Describe "Test-SsrsPath" {
 
     } # /Content
 
-    Context 'Usage' -Skip {
+    Context 'Usage' {
 
-        BeforeAll {
-            # Mock New-RsWebServiceProxy
-            # $MockObject = New-MockObject -Type 'ReportService2010'
-            # $MockObject | Add-Member -Type NoteProperty -Name 'existingproperty' -Value 'foo' -Force
-            # $MockObject | Add-Member -Type Method -Name GetItemType -Value { $true }
-            # -Type ScriptMethod -Name 'existingmethod' -Value { whatever } -Force
-            # GetItemType
-            # $obj.GetType().FullName
-                # System.Diagnostics.Process
-        }
+        Context "when a valid path is supplied'" -skip {
 
-        Context "when a valid path is supplied'" {
             BeforeEach {
-                
-                # Mock GetItemType {
-                #     $MockObject = New-MockObject -Type 'ReportService2010'
-                #     $MockObject | Add-Member -Type Method -Name GetItemType -Value { $true }
-                #     $MockObject
-                # }
+                # arrange
+                $Server = 'reportingservices.domain.tld'
 
-                Mock New-RsWebServiceProxy {
-                    # $MockObject = New-MockObject -Type 'ReportService2010'
-                    # $MockObject | Add-Member -Type Method -Name GetItemType -Value { $true }
+                Mock New-RsWebServiceProxy
+
+                # act
+                $Actual = Test-SsrsPath -Server $Server -Path '/'
+            }
+
+            It 'uses the correct settings' {
+                # assert
+                Should -Invoke New-RsWebServiceProxy -ParameterFilter {
+                    $Uri -like "*$Server*"
                 }
             }
 
             It 'returns true' {
-
-                Test-SsrsPath -Server '' -Path ''
-
-                # Should -Invoke GetItemType
-                # Assert-MockCalled -
-                Should -Invoke GetItemType -ParameterFilter {
-                    $DriverID -eq $BambooHrEmployee.employeeNumber
-                }
-                # Assert-MockCalled Start-Sleep -Times 1 -Exactly -ParameterFilter {
-                #     Write-Debug "Seconds: $Seconds"
-                #     Write-Debug "BatchDelay: $($Settings.SmtpSettings.BatchDelay)"
-                #     $Seconds -eq $Settings.SmtpSettings.BatchDelay
-                # }
+                $Actual | Should -Be $true
             }
         }
 
-        Context "when an invalid path is supplied" {
-            # BeforeAll {
-            #     $MockObject = New-MockObject -Type 'ReportService2010'
-            #     $MockObject | Add-Member -Type Method -Name GetItemType -Value { $false }
-            # }
+        Context "when an invalid path is supplied" -skip {
+
+            BeforeEach {
+                # arrange
+                $Server = 'reportingservices.domain.tld'
+
+                Mock New-RsWebServiceProxy
+
+                # act
+                $Actual = Test-SsrsPath -Server $Server -Path '/does/not/exist'
+            }
+    
+            It 'uses the correct settings' {
+                # assert
+                Should -Invoke New-RsWebServiceProxy -ParameterFilter {
+                    $Uri -like "*$Server*"
+                }
+            }
 
             It 'returns false' {
-                $false | Should -Be $true
+                $Actual | Should -Be $false
             }
         }
 
