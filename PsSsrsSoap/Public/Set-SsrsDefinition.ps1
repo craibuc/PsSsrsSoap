@@ -24,7 +24,7 @@ https://docs.microsoft.com/en-us/dotnet/api/reportservice2010.reportingservice20
 
 #>
 
-function Set-SsrsRdl
+function Set-SsrsDefinition
 {
     [CmdletBinding(SupportsShouldProcess)]
     param (
