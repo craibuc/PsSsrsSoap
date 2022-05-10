@@ -19,7 +19,7 @@ https://docs.microsoft.com/en-us/dotnet/api/reportservice2010.reportingservice20
 
 #>
 
-function Get-SsrsRdl
+function Get-SsrsDefinition
 {
     [CmdletBinding(SupportsShouldProcess)]
     param (
@@ -55,9 +55,9 @@ function Get-SsrsRdl
 
                     [System.IO.MemoryStream]$MemoryStream = New-Object System.IO.MemoryStream(@(,$bytes));
         
-                    $RDL = New-Object System.Xml.XmlDocument
-                    $RDL.Load($MemoryStream)
-                    $RDL    
+                    $Defintion = New-Object System.Xml.XmlDocument
+                    $Defintion.Load($MemoryStream)
+                    $Defintion    
                 }
             }
             catch

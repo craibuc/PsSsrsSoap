@@ -11,12 +11,12 @@ BeforeAll {
 
 }
 
-Describe "Get-SsrsRdl" {
+Describe "Get-SsrsDefinition" {
 
     Context "Parameter validation" {
 
         BeforeAll {
-            $Command = Get-Command 'Get-SsrsRdl'
+            $Command = Get-Command 'Get-SsrsDefinition'
         } 
 
         @{Name = 'Server';Type = [string];Mandatory=$true;Position=0},
