@@ -9,7 +9,7 @@ The server's IP or name.
 Path to report in SSRS.
 
 .EXAMPLE
-$RDL = Get-SsrsRdl -Server reportserver.domain.tld -Path '/Radiology/MyReport'
+$RDL = Get-SsrsDefinition -Server reportserver.domain.tld -Path '/Radiology/MyReport'
 $RDL.Save('~\Desktop\Radiology\MyReport.rdl')
 
 Save the report's RDL to a local file.
