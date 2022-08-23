@@ -48,8 +48,6 @@ function Test-SsrsPath
             # remove trailing '/' if not root directory
             $Path = if ($Path.EndsWith('/') -and $Path.Length -gt 1) { $Path.Substring(0,$Path.Length-1) } else { $Path }
 
-            Write-Verbose "Testing $Path..."
-
             # test for presence of parent
             $ItemType = $Proxy.GetItemType($Path)
             Write-Debug "ItemType: $ItemType"
