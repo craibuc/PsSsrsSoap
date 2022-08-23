@@ -62,14 +62,14 @@ function Set-SsrsDefinition
     {
         foreach ($FileInfo in $InputObject)
         {
-            Write-Verbose "Processing: $($FileInfo.Name)"
+            Write-Verbose "Processing: $($FileInfo.Name)..."
 
             # if folder doesn't exist, create it
             $ItemType = $Proxy.GetItemType($Folder)
 
             if ( $null -eq $ItemType -or $ItemType -eq 'Unknown' )
             {
-                New-SsrsFolder -Server $Server -Path $Folder -WhatIf:$WhatIfPreference
+                New-SsrsFolder -Server $Server -Path $Folder -WhatIf:$WhatIfPreference -Verbose:$VerbosePreference
             }
 
             if ($PSCmdlet.ShouldProcess($FileInfo.BaseName, "CreateCatalogItem()")) 
