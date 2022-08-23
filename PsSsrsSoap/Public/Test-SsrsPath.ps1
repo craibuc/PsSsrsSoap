@@ -23,7 +23,7 @@ https://docs.microsoft.com/en-us/dotnet/api/reportservice2010.reportingservice20
 #>
 function Test-SsrsPath
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param (
         [Parameter(Position=0,Mandatory)]
         [string]$Server,
@@ -51,10 +51,8 @@ function Test-SsrsPath
             Write-Verbose "Testing $Path..."
 
             # test for presence of parent
-            if ($PSCmdlet.ShouldProcess($Path, "GetItemType()")){
-                $ItemType = $Proxy.GetItemType($Path)
-                Write-Debug "ItemType: $ItemType"                    
-            }
+            $ItemType = $Proxy.GetItemType($Path)
+            Write-Debug "ItemType: $ItemType"
 
             if ( $null -eq $ItemType -or $ItemType -eq 'Unknown' ){ $false }
             else { $true }
