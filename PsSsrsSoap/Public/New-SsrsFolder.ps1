@@ -8,11 +8,8 @@ The server's IP or name.
 .PARAMETER Path
 Path to report in SSRS.
 
-.PARAMETER Parent
-Create parent directories as needed.
-
 .EXAMPLE
-New-SsrsFolder -Server reportserver.domain.tld -Path '/one/two/three' -Parent
+New-SsrsFolder -Server reportserver.domain.tld -Path '/one/two/three'
 
 Create a new folder
 
@@ -28,10 +25,7 @@ function New-SsrsFolder
         [string]$Server,
 
         [Parameter(Position=1,Mandatory)]
-        [string]$Path,
-
-        [Parameter(Position=2)]
-        [switch]$Parent
+        [string]$Path
     )
     
     begin
@@ -45,45 +39,40 @@ function New-SsrsFolder
 
         try
         {
+            # normalize
+            # \one\two\three --> /one/two/three
+            $Path = $Path.Replace('\','/')
 
-            # /one/two/three
             # split into segments
+            # /one/two/three --> [,one,two,three]
             $Segment = $Path -split '/'
 
             # for each segment
-            for ($i = 0; $i -lt $Segment.Count; $i++) 
+            for ($i = 1; $i -lt $Segment.Count; $i++) 
             {
-                $P = if ( $i -eq 0 )
+                $CurrentPath = '/' + ($Segment[1..$i] -join '/')
+                Write-Debug ("CurrentPath: $CurrentPath")
+
+                $Folder,$Parent = 
+                if ( $i -eq 1 )
                 {
-                    '/'
+                    $Segment[$i],'/'
                 }
                 else
                 {
-                    # add to prior segment if the is one
+                    $Segment[$i],( '/' + ($Segment[1..($i-1)] -join '/') )
                 }
 
-                # test the path
-                # if it doesn't exist, create folder
+                Write-Debug ("Folder: {0} Parent:{1}" -f $Folder, $Parent)
 
-            }
-
-
-            # $Parent = (Split-Path $Path -Parent).Replace('\','/')
-            # $Name = Split-Path $Path -Leaf
-
-            # test for presence of parent
-            # $ItemType = $Proxy.GetItemType($Parent)
-            
-            if ( $null -eq $ItemType -or $ItemType -eq 'Unknown' )
-            {
-                Write-Verbose "Creating folder '$Parent'..."
-
-                $Grandparent = (Split-Path $Parent -Parent).Replace('\','/')
-                $Leaf = Split-Path $Parent -Leaf
-
-                if ($PSCmdlet.ShouldProcess($Parent, "CreateFolder()")) 
+                # if folder doesn't exist, create it
+                if ( (Test-SsrsPath -Server $Server -Path $CurrentPath -WhatIf:$WhatIfPreference) -eq $false ) 
                 {
-                    $Proxy.CreateFolder($Leaf, $Grandparent, $null) | Out-Null
+                    if ($PSCmdlet.ShouldProcess($CurrentPath, "CreateFolder()")) 
+                    {
+                        $Proxy.CreateFolder($Folder, $Parent, $null) | Out-Null
+                    }
+
                 }
             }
 
