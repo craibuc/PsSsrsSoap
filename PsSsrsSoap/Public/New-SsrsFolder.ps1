@@ -66,7 +66,7 @@ function New-SsrsFolder
                 Write-Debug ("Folder: {0} Parent:{1}" -f $Folder, $Parent)
 
                 # if folder doesn't exist, create it
-                if ( (Test-SsrsPath -Server $Server -Path $CurrentPath -WhatIf:$WhatIfPreference) -eq $false ) 
+                if ( (Test-SsrsPath -Server $Server -Path $CurrentPath) -eq $false ) 
                 {
                     if ($PSCmdlet.ShouldProcess($CurrentPath, "CreateFolder()")) 
                     {
