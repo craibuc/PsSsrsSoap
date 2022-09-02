@@ -8,6 +8,9 @@ The server's IP or name.
 .PARAMETER Path
 Path to report in SSRS.
 
+.PARAMETER UseInsecure
+Uses HTTP instead of HTTPS.
+
 .EXAMPLE
 New-SsrsFolder -Server reportserver.domain.tld -Path '/one/two/three'
 
@@ -25,12 +28,16 @@ function New-SsrsFolder
         [string]$Server,
 
         [Parameter(Position=1,Mandatory)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [switch]$UseInsecure
     )
     
     begin
     {
-        $Uri = "https://$Server/ReportServer/ReportService2010.asmx?wsdl"
+        $Schema = if ($UseInsecure.IsPresent) {'HTTP'} else {'HTTPS'}
+        $Uri = "$Schema`://$Server/ReportServer/ReportService2010.asmx?wsdl"
         $Proxy = New-RsWebServiceProxy -ApiVersion 2010 -ReportServerUri $Uri
     }
 
@@ -66,7 +73,7 @@ function New-SsrsFolder
                 Write-Debug ("Folder: {0} Parent:{1}" -f $Folder, $Parent)
 
                 # if folder doesn't exist, create it
-                if ( (Test-SsrsPath -Server $Server -Path $CurrentPath) -eq $false ) 
+                if ( (Test-SsrsPath -Server $Server -Path $CurrentPath -UseInsecure:$UseInsecure) -eq $false ) 
                 {
                     if ($PSCmdlet.ShouldProcess($CurrentPath, "CreateFolder()")) 
                     {

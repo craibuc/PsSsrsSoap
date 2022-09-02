@@ -8,6 +8,9 @@ The server's IP or name.
 .PARAMETER Path
 Path to report in SSRS.
 
+.PARAMETER UseInsecure
+Uses HTTP instead of HTTPS.
+
 .EXAMPLE
 $RDL = Get-SsrsDefinition -Server reportserver.domain.tld -Path '/Radiology/MyReport'
 $RDL.Save('~\Desktop\Radiology\MyReport.rdl')
@@ -27,12 +30,16 @@ function Get-SsrsDefinition
         [string]$Server,
 
         [Parameter(Position=1,Mandatory,ValueFromPipeline)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [switch]$UseInsecure
     )
     
     begin 
     {
-        $Uri = "https://$Server/ReportServer/ReportService2010.asmx?wsdl"
+        $Schema = if ($UseInsecure.IsPresent) {'HTTP'} else {'HTTPS'}
+        $Uri = "$Schema`://$Server/ReportServer/ReportService2010.asmx?wsdl"
         $Proxy = New-RsWebServiceProxy -ApiVersion 2010 -ReportServerUri $Uri
     }
     

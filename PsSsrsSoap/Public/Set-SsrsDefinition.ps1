@@ -17,6 +17,9 @@ Property array to include
 .PARAMETER Force
 If the report exists, overwrite it.
 
+.PARAMETER UseInsecure
+Uses HTTP instead of HTTPS.
+
 .EXAMPLE
 Set-SsrsDefinition -Server reportserver.domain.tld -Folder '/foo/bar/baz' -InputObject ~/Documents/report.rdl
 
@@ -49,12 +52,16 @@ function Set-SsrsDefinition
         [object]$Property,
 
         [Parameter(Position=4)]
-        [switch]$Force
+        [switch]$Force,
+
+        [Parameter()]
+        [switch]$UseInsecure
     )
     
     begin
     {
-        $Uri = "https://$Server/ReportServer/ReportService2010.asmx?wsdl"
+        $Schema = if ($UseInsecure.IsPresent) {'HTTP'} else {'HTTPS'}
+        $Uri = "$Schema`://$Server/ReportServer/ReportService2010.asmx?wsdl"
         $Proxy = New-RsWebServiceProxy -ApiVersion 2010 -ReportServerUri $Uri
     }
     
@@ -69,7 +76,7 @@ function Set-SsrsDefinition
 
             if ( $null -eq $ItemType -or $ItemType -eq 'Unknown' )
             {
-                New-SsrsFolder -Server $Server -Path $Folder -WhatIf:$WhatIfPreference -Verbose:$VerbosePreference
+                New-SsrsFolder -Server $Server -Path $Folder -UseInsecure:$UseInsecure -WhatIf:$WhatIfPreference -Verbose:$VerbosePreference
             }
 
             if ($PSCmdlet.ShouldProcess($FileInfo.BaseName, "CreateCatalogItem()")) 

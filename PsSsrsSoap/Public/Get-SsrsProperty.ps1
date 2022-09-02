@@ -8,6 +8,9 @@ Name or IP address of SSRS server.
 .PARAMETER Path
 Report path
 
+.PARAMETER UseInsecure
+Uses HTTP instead of HTTPS.
+
 .EXAMPLE
 Get-SsrsProperty -Server reportserver.domain.tld -Path '/path/to/report'
 
@@ -25,12 +28,16 @@ function Get-SsrsProperty
         [string]$Server,
 
         [Parameter(Position=1,Mandatory,ValueFromPipeline)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [switch]$UseInsecure
     )
     
     begin 
     {
-        $Uri = "https://$Server/ReportServer/ReportService2010.asmx?wsdl"
+        $Schema = if ($UseInsecure.IsPresent) {'HTTP'} else {'HTTPS'}
+        $Uri = "$Schema`://$Server/ReportServer/ReportService2010.asmx?wsdl"
         $Proxy = New-RsWebServiceProxy -ApiVersion 2010 -ReportServerUri $Uri
     }
     
