@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 0.1.0
+.VERSION 0.1.1
 .GUID 6bd191b1-6882-4db8-a6ad-8c04bb79d318
 .AUTHOR Craig Buchanan
 .COMPANYNAME cogniza
@@ -82,46 +82,54 @@ try
 
     Get-RsFolderContent -ReportServerUri $Uri -RsFolder $Folder -Recurse | Where-Object { $_.TypeName -in $TypeName } | ForEach-Object {
         
-        Write-Verbose ("Processing: {0}" -f $_.Path)
-
-        # populate byte array with data
-        [byte[]] $RDL = $null;
-        $RDL = $Proxy.GetItemDefinition($_.Path)
-        
-        # create stream
-        [System.IO.MemoryStream] $memStream = New-Object System.IO.MemoryStream(@(,$RDL))
-
-        # create XML document
-        $rdlFile = New-Object System.Xml.XmlDocument
-        $rdlFile.Load($memStream)
-
-        # target location
-        $ext = if ( $_.TypeName -eq 'DataSource') {'xml'} else {'rdl'}
-        $OutPath = Join-Path $Path ("{0}{1}.{2}" -f $Server, $_.Path, $ext)
-        Write-Debug "OutPath: $OutPath"
-
-        # containing folder
-        $Directory = Split-Path $OutPath -Parent
-        Write-Debug "Directory: $Directory"
-
-        # create containing folder
-        New-Item -ItemType Directory -Path $Directory -Force | Out-Null
-
-        if ( $PSCmdlet.ShouldProcess($OutPath,'Save') )
+        try 
         {
-            # save RDL
-            $rdlFile.Save($OutPath)
+            Write-Verbose ("Processing: {0}" -f $_.Path)
+
+            # populate byte array with data
+            [byte[]] $RDL = $null;
+            $RDL = $Proxy.GetItemDefinition($_.Path)
+            
+            # create stream
+            [System.IO.MemoryStream] $memStream = New-Object System.IO.MemoryStream(@(,$RDL))
+    
+            # create XML document
+            $rdlFile = New-Object System.Xml.XmlDocument
+            $rdlFile.Load($memStream)
+    
+            # target location
+            $ext = if ( $_.TypeName -eq 'DataSource') {'xml'} else {'rdl'}
+            $OutPath = Join-Path $Path ("{0}{1}.{2}" -f $Server, $_.Path, $ext)
+            Write-Debug "OutPath: $OutPath"
+    
+            # containing folder
+            $Directory = Split-Path $OutPath -Parent
+            Write-Debug "Directory: $Directory"
+    
+            # create containing folder
+            New-Item -ItemType Directory -Path $Directory -Force | Out-Null
+    
+            if ( $PSCmdlet.ShouldProcess($OutPath,'Save') )
+            {
+                # save RDL
+                $rdlFile.Save($OutPath)
+            }
+    
+            # manage memory
+            $memStream.Dispose()
+            $memStream = $null
+        }
+        catch 
+        {
+            Write-Host "ERROR: $( $_.Exception.Message )" -ForegroundColor Red
         }
 
-        # manage memory
-        $memStream.Dispose()
-        $memStream = $null
     }
 
 }
 catch 
 {
-    Write-Host "ERROR: $( $_.Exception.Message )" -ForegroundColor Red
+    Write-Host "CRITICAL: $( $_.Exception.Message )" -ForegroundColor Red
 }
 finally
 {
