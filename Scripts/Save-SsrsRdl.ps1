@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 0.1.1
+.VERSION 0.2.0
 .GUID 6bd191b1-6882-4db8-a6ad-8c04bb79d318
 .AUTHOR Craig Buchanan
 .COMPANYNAME cogniza
@@ -34,6 +34,9 @@ Location to save RDL files.
 .PARAMETER TypeName
 Type of object to save.
 
+.PARAMETER CreatedOrModified
+Include objects that have been created or modified after this date (inclusive).
+
 .PARAMETER UseInsecure
 Forces the use of HTTP.
 
@@ -67,6 +70,9 @@ param (
     [string[]]$TypeName = ('DataSource','Report'),
 
     [Parameter()]
+    [datetime]$CreatedOrModified,
+
+    [Parameter()]
     [switch]$UseInsecure
 )
 
@@ -80,7 +86,11 @@ try
 
     $Path = Resolve-Path -Path $Path
 
-    Get-RsFolderContent -ReportServerUri $Uri -RsFolder $Folder -Recurse | Where-Object { $_.TypeName -in $TypeName } | ForEach-Object {
+    $FilterScript = 
+        if ( $null -ne $CreatedOrModified ) { { $_.TypeName -in $TypeName -and ($_.CreationDate -ge $CreatedOrModified -or $_.ModifiedDate -ge $CreatedOrModified) } } 
+        else { { $_.TypeName -in $TypeName } }
+
+    Get-RsFolderContent -ReportServerUri $Uri -RsFolder $Folder -Recurse | Where-Object -FilterScript $FilterScript | ForEach-Object {
         
         try 
         {
